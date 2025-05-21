@@ -1,0 +1,34 @@
+// سكريبت Gradle لتنزيل نماذج TensorFlow Lite (TFLite) أثناء بناء التطبيق
+
+task downloadMLModels(type: Exec) {
+    workingDir "${rootDir}"
+    
+    // تحديد الأمر الذي سيتم تنفيذه
+    if (System.getProperty('os.name').toLowerCase().contains('windows')) {
+        // لنظام Windows
+        commandLine 'cmd', '/c', 'python', 'download_ml_models.py', "${rootDir}"
+    } else {
+        // لأنظمة Unix/Linux/Mac
+        commandLine 'python3', 'download_ml_models.py', "${rootDir}"
+    }
+    
+    // السماح بالاستمرار في عملية البناء حتى في حالة فشل التنزيل
+    ignoreExitValue true
+    
+    // رسائل التنفيذ
+    doFirst {
+        println "بدء تنزيل نماذج الذكاء الاصطناعي..."
+    }
+    
+    doLast {
+        if (execResult.exitValue == 0) {
+            println "تم تنزيل نماذج الذكاء الاصطناعي بنجاح."
+        } else {
+            println "تحذير: فشل تنزيل نماذج الذكاء الاصطناعي. قد لا تعمل بعض وظائف التطبيق بشكل صحيح."
+            println "يمكنك تنزيل النماذج يدوياً باستخدام الأمر 'python download_ml_models.py'"
+        }
+    }
+}
+
+// تنفيذ مهمة تنزيل النماذج قبل تجميع التطبيق
+preBuild.dependsOn downloadMLModels
